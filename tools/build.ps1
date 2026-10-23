@@ -220,8 +220,19 @@ Get-ChildItem -LiteralPath (Join-Path $Out "img") -Directory |
   Where-Object { $slugs -notcontains $_.Name } |
   ForEach-Object { Remove-Item -LiteralPath $_.FullName -Recurse -Force; Write-Host "-  img/$($_.Name): rimossa (progetto non piu' presente)" }
 
+# Testo di presentazione della colonna sinistra: Progetti/info - about.txt
+# (paragrafi separati da una riga vuota)
+$about = @()
+$aboutPath = Join-Path $Source "info - about.txt"
+if (Test-Path -LiteralPath $aboutPath) {
+  $about = Get-Paragraphs @(Get-Content -LiteralPath $aboutPath -Encoding UTF8 | ForEach-Object { $_.Trim() })
+  Write-Host "ok info - about.txt: $($about.Count) paragrafi"
+}
+
 $json = ConvertTo-Json -InputObject @($projects) -Depth 6
+$aboutJson = ConvertTo-Json -InputObject @($about)
 $js = "// Generato da tools/build.ps1 - non modificare a mano, modifica i file in Progetti/`n" +
+      "window.ABOUT = $aboutJson;`n" +
       "window.PROJECTS = $json;`n"
 [IO.File]::WriteAllText((Join-Path $Out "projects.js"), $js, (New-Object System.Text.UTF8Encoding $false))
 Write-Host "projects.js aggiornato: $($projects.Count) progetti"

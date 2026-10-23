@@ -201,7 +201,8 @@
     column-gap: .5em;
     row-gap: .25em;
   }
-  .meta dt { font-size: var(--small); padding-top: .55em; }
+  /* Etichette piccole (Agency, Client...) alzate di poco per allinearle a vista */
+  .meta dt { font-size: var(--small); padding-top: calc(.55em - 1.5px); }
   .meta a { border-bottom: 1px solid currentColor; }
   .meta a:hover { border-bottom-color: transparent; }
 
@@ -220,7 +221,7 @@
     .col-left .body { margin-top: 48px; }
     .col-left .sheet, .project-group { scroll-margin-top: var(--header-h); }
     .col-right { display: none; }
-    .project-sep, .zoom-mark { display: none; }
+    .project-sep, .zoom-mark, .loop { display: none; }
     .mobile-info {
       display: block;
       background: var(--paper);
@@ -255,9 +256,10 @@
         </div>
         <div></div>
         <div class="body">
-          <p>Spatial designer working through design and art, exploring contemporary perspectives to create meaningful impact.</p>
-          <p>I blend practical design solutions with conceptual experimentation, creating site-specific installations, scalable formats, bespoke furniture and research-driven designs.</p>
-          <p>Originary from Kyrgyzstan and raised in Italy, my work communicates the stunning mix of brutalism and organic colorful ornaments of my birthland with the warm Mediterranean energy.</p>
+          <!-- Testo da Progetti/info - about.txt (inserito dallo script) -->
+          <p>Spatial designer with over five years of experience in retail, interior and architectural design.</p>
+          <p>My work blends practical design solutions with conceptual experimentation through site-specific installations, scalable formats, bespoke furniture and research-driven designs.</p>
+          <p>Originally from Kyrgyzstan and raised in Italy, I bring together the stunning mix of raw brutalism and colorful ornaments of my birthland with the warmth and heritage of Mediterranean culture.</p>
         </div>
         <div class="foot"></div>
       </div>
@@ -321,6 +323,11 @@
   const track = document.getElementById("story-track");
   const list = document.getElementById("project-list");
 
+  // Presentazione nella colonna sinistra, da Progetti/info - about.txt
+  if (window.ABOUT && ABOUT.length) {
+    document.querySelector("#about .body").innerHTML = ABOUT.map(t => `<p>${t}</p>`).join("");
+  }
+
   const sheetHTML = (p, tag) => `
     <div class="sheet">
       <div>
@@ -377,15 +384,40 @@
     track.appendChild(panel);
   });
 
+  // ---- Dopo l'ultimo progetto si ricomincia dal primo ----
+  // In fondo alla colonna c'è una copia del primo progetto (con la sua striscia):
+  // quando la copia arriva in cima, si torna all'originale senza salti visibili.
+  let loop = null;
+  if (shown.length > 1) {
+    const n0 = projects.indexOf(shown[0]);
+    loop = document.createElement("div");
+    loop.className = "loop";
+    loop.setAttribute("aria-hidden", "true");
+    loop.innerHTML = `<div class="project-sep"><span class="title">${plain(shown[0].title)}</span><span class="num">${pad(n0 + 1)} / ${pad(projects.length)}</span></div>`;
+    const copy = gallery.querySelector(".project-group").cloneNode(true);
+    copy.className = "loop-copy";
+    loop.appendChild(copy);
+    gallery.appendChild(loop);
+  }
+
   // ---- Sincronizza colonna destra ed elenco con le immagini visibili ----
   const groups = [...gallery.querySelectorAll(".project-group")];
   let current = -1;
   let pending = null, pendingTimer;
 
   function onScroll() {
+    if (loop && !isMobile() && pending === null) {
+      const copyTop = loop.lastElementChild.offsetTop;
+      if (gallery.scrollTop >= copyTop) {
+        gallery.scrollTo({ top: gallery.scrollTop - copyTop, behavior: "instant" });
+        return;
+      }
+    }
     const mid = gallery.scrollTop + gallery.clientHeight / 2;
     let active = 0;
     groups.forEach((g, i) => { if (g.offsetTop <= mid) active = i; });
+    // Dalla striscia finale in poi si sta già guardando il primo progetto
+    if (loop && loop.offsetTop <= mid) active = 0;
     // Durante un salto a un progetto la scheda resta su quello di destinazione
     if (pending !== null) active = pending;
     if (active !== current) {
@@ -400,6 +432,12 @@
   // Le immagini non ancora caricate possono spostare i progetti:
   // finché il salto è in corso ricorreggiamo il punto d'arrivo.
   function goTo(i) {
+    // "Avanti" dall'ultimo progetto: si scorre verso la copia del primo
+    if (loop && i >= groups.length) {
+      pending = null;
+      gallery.scrollTo({ top: loop.offsetTop });
+      return;
+    }
     i = Math.max(0, Math.min(groups.length - 1, i));
     if (i === current && pending === null) return;
     pending = i;

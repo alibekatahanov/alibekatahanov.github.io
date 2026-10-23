@@ -1,4 +1,9 @@
 // Generato da tools/build.ps1 - non modificare a mano, modifica i file in Progetti/
+window.ABOUT = [
+    "Spatial designer with over five years of experience in retail, interior and architectural design.",
+    "My work blends practical design solutions with conceptual experimentation through site-specific installations, scalable formats, bespoke furniture and research-driven designs.",
+    "Originally from Kyrgyzstan and raised in Italy, I bring together the stunning mix of raw brutalism and colorful ornaments of my birthland with the warmth and heritage of Mediterranean culture."
+];
 window.PROJECTS = [
     {
         "title":  "Waso",
@@ -68,7 +73,7 @@ window.PROJECTS = [
                   ]
     },
     {
-        "title":  "Guido\u003cbr\u003eGobino",
+        "title":  "Guido Gobino",
         "sub":  "New opening in Alba",
         "meta":  {
                      "Agency":  "CBA Italy",
@@ -280,7 +285,7 @@ window.PROJECTS = [
                   ]
     },
     {
-        "title":  "Oreo\u003cbr\u003eDeli",
+        "title":  "Oreo Deli",
         "sub":  "Concept store for the new Oreo Deli",
         "meta":  {
                      "Agency":  "CBA Italy, CBA Paris, Ogilvy",
@@ -319,13 +324,13 @@ window.PROJECTS = [
                   ]
     },
     {
-        "title":  "Sport e Salute\u003cbr\u003eConcept Office",
+        "title":  "Sport e Salute\u003cbr\u003eOffice",
         "sub":  "Application of the new visual identity to office spaces",
         "meta":  {
                      "Agency":  "CBA Italy",
                      "Client":  "Sport e Salute",
                      "Field":  "Interior design",
-                     "Year":  "2026"
+                     "Year":  "2025"
                  },
         "text":  [
                      "TBA"
@@ -389,7 +394,7 @@ window.PROJECTS = [
     },
     {
         "title":  "Al Manshiyah\u003cbr\u003eFarmer\u0027s Market",
-        "sub":  "Urban square for modular market exhibition",
+        "sub":  "A new gathering space for AlUla\u0027s Farmers",
         "meta":  {
                      "Studio":  "\u003ca href=\"https://studiotemp.com/\" target=\"_blank\" rel=\"noopener\"\u003eStudio TEMP Architects\u003c/a\u003e",
                      "Client":  "Royal Commission for AlUla, Saudi Arabia",
@@ -556,15 +561,14 @@ window.PROJECTS = [
                   ]
     },
     {
-        "title":  "Stand Design\u003cbr\u003efor CBA Italy",
+        "title":  "Stand Design\u003cbr\u003efor CBA",
         "sub":  "Selection of exhibition stand projects",
         "meta":  {
                      "Agency":  "CBA Italy",
-                     "Clients":  "Emmi Dessert Italia\u003cbr\u003eMolino Caputo\u003cbr\u003eForno Bonomi\u003cbr\u003eMetro\u003cbr\u003eAcquaviva\u003cbr\u003eNutriveo",
-                     "Exhibitions":  "Tuttofood\u003cbr\u003eCibus\u003cbr\u003eFiEurope\u003cbr\u003eMeeting Rimini",
+                     "Clients":  "Emmi Dessert Italia, Molino Caputo, Forno Bonomi, Metro, Acquaviva, Nutriveo",
+                     "Exhibitions":  "Tuttofood, Cibus, FiEurope, Meeting Rimini",
                      "Field":  "Retail design",
-                     "Status":  "Built",
-                     "Year":  "2023–2026"
+                     "Status":  "Built"
                  },
         "text":  [
                      "Selection of exhibition stand projects designed at CBA Italy for a wide range of clients. Each stand was designed to better represent the brand identity and values, while also properly connect to each fair\u0027s environment and regulations. Many of these projects were designed to be modular in order to be reused for more exhibitions. Every stand was designed by the CBA team and developed with general contractors."
