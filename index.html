@@ -1,0 +1,601 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Alibek Atahanov</title>
+<link rel="preload" href="fonts/UncutSans-Variable.ttf" as="font" type="font/ttf" crossorigin>
+<style>
+  @font-face {
+    font-family: "Uncut Sans";
+    src: url("fonts/UncutSans-Variable.ttf") format("truetype");
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  :root {
+    --blue: #1450f0;   /* blu originale della colonna sinistra */
+    --ink: #0b0b0b;
+    /* Colore della colonna sinistra: per tornare al blu scrivere var(--blue) */
+    --left-bg: var(--blue);
+    /* Linea tra le immagini della colonna centrale (0 per toglierla) */
+    --img-line: 1px;
+    --paper: #f3f3f3;
+    --white: #fff;
+
+    --header-h: clamp(40px, 3.1vw, 62px);
+    --pad: clamp(16px, 1.8vw, 36px);
+    --display: clamp(40px, 3.9vw, 80px);
+    --text: clamp(13px, 1vw, 20px);
+    --small: clamp(9px, .6vw, 12px);
+    /* Spazio sotto i testi in basso: uguale a sinistra e a destra,
+       così la bio e la descrizione del progetto sono allineate */
+    --foot-h: clamp(30px, 2.8vw, 54px);
+
+    --sans: "Uncut Sans", "Helvetica Neue", Arial, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--white);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: var(--text);
+    line-height: 1.06;
+    letter-spacing: -.015em;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; text-decoration: none; }
+  button { font: inherit; letter-spacing: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+  ol, ul { list-style: none; }
+
+  /* ---------- Header ---------- */
+  .site-head {
+    height: var(--header-h);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    align-items: center;
+    padding: 0 var(--pad);
+    background: var(--white);
+    font-size: clamp(14px, 1.2vw, 24px);
+  }
+  .site-head > :nth-child(1) { justify-self: start; }
+  .site-head > :nth-child(2) { justify-self: center; }
+  .site-head > :nth-child(3) { justify-self: end; }
+  .site-head a { position: relative; }
+  .site-head a::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: -2px;
+    height: 1px; background: currentColor;
+    transform: scaleX(0); transform-origin: left; transition: transform .3s ease;
+  }
+  .site-head a:hover::after,
+  .site-head .is-active::after { transform: scaleX(1); }
+
+  /* ---------- Layout a 3 colonne ---------- */
+  .layout {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    height: calc(100dvh - var(--header-h));
+  }
+  .col { position: relative; min-height: 0; overflow: hidden; }
+
+  /* Colonne che scorrono, senza barra di scorrimento visibile */
+  .scroller {
+    height: 100%;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+  }
+  .scroller::-webkit-scrollbar { display: none; }
+
+  /* Struttura comune ai pannelli testuali:
+     blocco in alto, spazio, blocco in basso, piede */
+  .sheet {
+    height: 100%;
+    display: grid;
+    grid-template-rows: auto 1fr auto var(--foot-h);
+    padding: calc(var(--display) * .95) var(--pad) 0;
+  }
+  .sheet h1, .sheet h2 {
+    font-weight: 400;
+    font-size: var(--display);
+    line-height: .92;
+    letter-spacing: -.035em;
+  }
+  .sheet .sub { margin-top: .9em; }
+  .sheet .body p { max-width: 27em; }
+  .sheet .body p + p { margin-top: 1em; }
+  .sheet .foot { align-self: center; }
+
+  /* ---------- Colonna sinistra: presentazione, progetti, contatti ---------- */
+  .col-left { background: var(--left-bg); color: var(--white); }
+  /* Ogni sezione occupa almeno un'intera colonna; l'elenco può allungarsi */
+  .col-left .sheet { height: auto; min-height: 100%; }
+
+  .rows li { border-top: 1px solid rgba(255, 255, 255, .4); }
+  .rows li:last-child { border-bottom: 1px solid rgba(255, 255, 255, .4); }
+  .rows a, .rows button {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 2.2em 1fr auto;
+    align-items: baseline;
+    gap: .5em;
+    padding: .5em 0;
+    text-align: left;
+    transition: opacity .2s;
+  }
+  .rows .num { font-size: var(--small); }
+  .rows .end { text-align: right; }
+  /* Elenco progetti: il progetto aperto resta pieno, gli altri si attenuano */
+  .project-list button { opacity: .55; }
+  .project-list button.is-current,
+  .project-list button:not(.is-soon):hover { opacity: 1; }
+  /* Progetti senza contenuti: visibili nell'elenco ma non cliccabili */
+  .project-list button.is-soon { opacity: .3; cursor: default; }
+  .contact-list a:hover .val { text-decoration: underline; }
+
+  /* ---------- Colonna centrale (immagini) ---------- */
+  .gallery { background: #cfccc6; }
+  .gallery figure { display: block; }
+  .gallery img, .gallery video {
+    display: block;
+    width: 100%;
+    height: auto; /* proporzioni originali, nessun ritaglio */
+    background: #cfccc6;
+  }
+  .gallery figure + figure { border-top: var(--img-line) solid var(--ink); }
+  .mobile-info { display: none; }
+
+  /* Stacco tra un progetto e l'altro: striscia nera con titolo e numero */
+  .project-sep {
+    height: clamp(44px, 3.6vw, 72px);
+    background: var(--ink);
+    color: var(--white);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 var(--pad);
+  }
+  .project-sep .title { font-size: clamp(16px, 1.4vw, 28px); letter-spacing: -.025em; }
+  .project-sep .num { font-size: var(--small); }
+
+  /* Immagini ingrandibili: "+" cerchiato in alto a destra, al clic si aprono */
+  .gallery figure { position: relative; }
+  .gallery figure.can-zoom img { cursor: zoom-in; }
+  .zoom-mark {
+    position: absolute;
+    top: 12px; right: 12px;
+    width: 28px; height: 28px;
+    color: var(--white);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .25s;
+    filter: drop-shadow(0 0 6px rgba(0, 0, 0, .25));
+  }
+  .gallery figure.can-zoom:hover .zoom-mark { opacity: 1; }
+
+  /* Immagine aperta (copia sopra la pagina); un clic la richiude */
+  .zoom {
+    position: fixed;
+    z-index: 50;
+    cursor: zoom-out;
+    transform-origin: 0 0;
+    transition: transform .5s cubic-bezier(.2, .7, .2, 1);
+  }
+
+  /* ---------- Colonna destra (racconto) ---------- */
+  .col-right { background: var(--paper); }
+  .story-track {
+    height: 100%;
+    transition: transform .9s cubic-bezier(.7, 0, .2, 1);
+  }
+  .col-right .sub, .mobile-info .sub { padding-left: .4em; }
+  .meta {
+    margin-top: clamp(24px, 2.4vw, 48px);
+    padding-left: .4em;
+    display: grid;
+    grid-template-columns: clamp(64px, 4.8vw, 96px) 1fr;
+    column-gap: .5em;
+    row-gap: .25em;
+  }
+  .meta dt { font-size: var(--small); padding-top: .55em; }
+  .meta a { border-bottom: 1px solid currentColor; }
+  .meta a:hover { border-bottom-color: transparent; }
+
+  /* ---------- Mobile: una colonna ---------- */
+  @media (max-width: 820px) {
+    :root { --display: 44px; --text: 15px; --small: 10px; }
+    body { overflow: auto; }
+    /* Header sempre visibile: fisso in alto, il contenuto parte sotto */
+    .site-head { position: fixed; top: 0; left: 0; right: 0; z-index: 5; }
+    .layout { display: block; height: auto; padding-top: var(--header-h); }
+    .col { overflow: visible; }
+    .scroller { height: auto; overflow: visible; }
+    .col-left .sheet { min-height: calc(100svh - var(--header-h)); }
+    .col-left .sheet + .sheet { min-height: 0; padding-bottom: 32px; }
+    .col-left .sheet + .sheet .foot { display: none; }
+    .col-left .body { margin-top: 48px; }
+    .col-left .sheet, .project-group { scroll-margin-top: var(--header-h); }
+    .col-right { display: none; }
+    .project-sep, .zoom-mark { display: none; }
+    .mobile-info {
+      display: block;
+      background: var(--paper);
+      padding: 40px var(--pad) 32px;
+    }
+    .mobile-info .sheet { height: auto; padding: 0; display: block; }
+    .mobile-info .body { margin-top: 28px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .story-track, .zoom { transition: none; }
+    .scroller { scroll-behavior: auto; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-head">
+  <a href="#" id="nav-home">Home</a>
+  <a href="#projects" id="nav-projects">Projects</a>
+  <a href="#info" id="nav-info">Info</a>
+</header>
+
+<main class="layout">
+  <!-- Colonna sinistra: presentazione, elenco progetti, contatti (scorre) -->
+  <section class="col col-left">
+    <div class="scroller" id="left">
+      <div class="sheet" id="about">
+        <div>
+          <h1>Alibek<br>Atahanov</h1>
+          <p class="sub">Spatial, Retail, Interior<br>Designer</p>
+        </div>
+        <div></div>
+        <div class="body">
+          <p>Spatial designer working through design and art, exploring contemporary perspectives to create meaningful impact.</p>
+          <p>I blend practical design solutions with conceptual experimentation, creating site-specific installations, scalable formats, bespoke furniture and research-driven designs.</p>
+          <p>Originary from Kyrgyzstan and raised in Italy, my work communicates the stunning mix of brutalism and organic colorful ornaments of my birthland with the warm Mediterranean energy.</p>
+        </div>
+        <div class="foot"></div>
+      </div>
+
+      <div class="sheet" id="projects">
+        <div>
+          <h2>Projects</h2>
+          <p class="sub">Selected works</p>
+        </div>
+        <div></div>
+        <ol class="body rows project-list" id="project-list"></ol>
+        <div class="foot"></div>
+      </div>
+
+      <div class="sheet" id="info">
+        <div>
+          <h2>Info</h2>
+          <p class="sub">Available for commissions<br>and collaborations</p>
+        </div>
+        <div></div>
+        <ul class="body rows contact-list">
+          <li><a href="mailto:alibek.atahanov@gmail.com"><span class="num">Email</span><span></span><span class="end val">alibek.atahanov@gmail.com</span></a></li>
+          <li><a href="https://www.instagram.com/alibek.atahanov/" target="_blank" rel="noopener"><span class="num">Instagram</span><span></span><span class="end val">@alibek.atahanov</span></a></li>
+          <li><a href="docs/Alibek-Atahanov-CV.pdf" target="_blank" rel="noopener"><span class="num">CV</span><span></span><span class="end val">Download PDF</span></a></li>
+        </ul>
+        <div class="foot">©2026</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Colonna centrale: immagini -->
+  <section class="col col-center">
+    <div class="scroller gallery" id="gallery"></div>
+  </section>
+
+  <!-- Colonna destra: racconto dei progetti -->
+  <section class="col col-right">
+    <div class="story-track" id="story-track"></div>
+  </section>
+</main>
+
+<script src="projects.js"></script>
+<script>
+  // ---- Impostazioni ----
+  // Larghezza massima dell'immagine aperta al clic, in frazione della finestra
+  // (2/3 = due colonne). Mettere 0 per disattivare l'ingrandimento.
+  const ZOOM_MAX_WIDTH = 2 / 3;
+
+  // Segno "+" cerchiato sulle immagini ingrandibili
+  const ZOOM_MARK = `<svg class="zoom-mark" viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="13" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M14 8.5v11M8.5 14h11" stroke="currentColor" stroke-width="1.2"/></svg>`;
+
+  // I progetti arrivano da projects.js, generato da tools/build.ps1
+  // a partire dalla cartella Progetti/ (non si modificano qui)
+  const projects = window.PROJECTS || [];
+  const pad = n => String(n).padStart(2, "0");
+  const plain = s => (s || "").replace(/<br>/g, " ");
+  const isMobile = () => window.matchMedia("(max-width: 820px)").matches;
+
+  const left = document.getElementById("left");
+  const gallery = document.getElementById("gallery");
+  const track = document.getElementById("story-track");
+  const list = document.getElementById("project-list");
+
+  const sheetHTML = (p, tag) => `
+    <div class="sheet">
+      <div>
+        <${tag}>${p.title}</${tag}>
+        <p class="sub">${p.sub}</p>
+        <dl class="meta">
+          ${Object.entries(p.meta).map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}
+        </dl>
+      </div>
+      <div></div>
+      <div class="body">${[].concat(p.text || []).map(t => `<p>${t}</p>`).join("")}</div>
+      <div class="foot"></div>
+    </div>`;
+
+  // Nell'elenco compaiono tutti i progetti; nelle colonne centrale e destra
+  // solo quelli che hanno già immagini (gli altri sono "in arrivo")
+  const shown = projects.filter(p => p.media && [].concat(p.media).length);
+  const listButtons = [];
+
+  projects.forEach((p, n) => {
+    const i = shown.indexOf(p);   // posizione tra i progetti visibili, -1 se in arrivo
+    const li = document.createElement("li");
+    li.innerHTML = `<button${i < 0 ? ' class="is-soon" disabled' : ""}><span class="num">${pad(n + 1)}</span><span>${plain(p.title)}</span><span class="end">${i < 0 ? "Soon" : (p.meta.Year || "")}</span></button>`;
+    const btn = li.querySelector("button");
+    if (i >= 0) {
+      btn.addEventListener("click", () => {
+        if (isMobile()) groups[i].scrollIntoView({ behavior: "smooth" });
+        else goTo(i);
+      });
+      listButtons[i] = btn;
+    }
+    list.appendChild(li);
+  });
+
+  shown.forEach((p, i) => {
+    const n = projects.indexOf(p);
+    // Colonna centrale: stacco (dal secondo progetto) + immagini
+    const group = document.createElement("div");
+    group.className = "project-group";
+    group.innerHTML = `
+      ${i > 0 ? `<div class="project-sep"><span class="title">${plain(p.title)}</span><span class="num">${pad(n + 1)} / ${pad(projects.length)}</span></div>` : ""}
+      <div class="mobile-info">${sheetHTML(p, "h2")}</div>
+      ${[].concat(p.media || []).map(m => m.type === "video"
+        ? `<figure><video src="${m.src}" autoplay muted loop playsinline preload="metadata"></video></figure>`
+        // width/height riservano lo spazio prima che l'immagine sia caricata
+        : `<figure><img alt="" src="${m.src}" width="${m.w}" height="${m.h}" loading="lazy" decoding="async">${ZOOM_MARK}</figure>`
+      ).join("")}`;
+    gallery.appendChild(group);
+
+    // Colonna destra: scheda del progetto
+    const panel = document.createElement("article");
+    panel.style.height = "100%";
+    panel.innerHTML = sheetHTML(p, "h2");
+    track.appendChild(panel);
+  });
+
+  // ---- Sincronizza colonna destra ed elenco con le immagini visibili ----
+  const groups = [...gallery.querySelectorAll(".project-group")];
+  let current = -1;
+  let pending = null, pendingTimer;
+
+  function onScroll() {
+    const mid = gallery.scrollTop + gallery.clientHeight / 2;
+    let active = 0;
+    groups.forEach((g, i) => { if (g.offsetTop <= mid) active = i; });
+    // Durante un salto a un progetto la scheda resta su quello di destinazione
+    if (pending !== null) active = pending;
+    if (active !== current) {
+      current = active;
+      track.style.transform = `translateY(${-active * 100}%)`;
+      listButtons.forEach((b, i) => b.classList.toggle("is-current", i === active));
+    }
+  }
+  gallery.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", onScroll);
+
+  // Le immagini non ancora caricate possono spostare i progetti:
+  // finché il salto è in corso ricorreggiamo il punto d'arrivo.
+  function goTo(i) {
+    i = Math.max(0, Math.min(groups.length - 1, i));
+    if (i === current && pending === null) return;
+    pending = i;
+    clearTimeout(pendingTimer);
+    pendingTimer = setTimeout(() => { pending = null; }, 4000);
+    gallery.scrollTo({ top: groups[i].offsetTop });
+    onScroll();
+  }
+  function realign() {
+    if (pending !== null) gallery.scrollTo({ top: groups[pending].offsetTop, behavior: "instant" });
+    onScroll();
+  }
+  gallery.querySelectorAll("img").forEach(img => img.addEventListener("load", realign));
+  gallery.querySelectorAll("video").forEach(v => v.addEventListener("loadedmetadata", realign));
+  // Se l'utente scorre da solo le immagini, smettiamo di correggere
+  ["wheel", "touchstart"].forEach(t => gallery.addEventListener(t, () => { pending = null; }, { passive: true }));
+  onScroll();
+
+  // ---- Colonna destra: rotella/swipe = progetto precedente/successivo ----
+  const rightCol = document.querySelector(".col-right");
+  let locked = false, unlockTimer;
+  function step(dir) {
+    if (locked) return;
+    locked = true;
+    goTo(current + dir);
+  }
+  // Sblocca solo quando la rotella/trackpad si ferma, così un gesto = un progetto
+  function holdLock() {
+    clearTimeout(unlockTimer);
+    unlockTimer = setTimeout(() => { locked = false; }, 450);
+  }
+  rightCol.addEventListener("wheel", e => {
+    e.preventDefault();
+    if (Math.abs(e.deltaY) > 4) step(Math.sign(e.deltaY));
+    holdLock();
+  }, { passive: false });
+
+  let touchY = null;
+  rightCol.addEventListener("touchstart", e => { touchY = e.touches[0].clientY; }, { passive: true });
+  rightCol.addEventListener("touchend", e => {
+    if (touchY === null) return;
+    const dy = touchY - e.changedTouches[0].clientY;
+    if (Math.abs(dy) > 40) { step(Math.sign(dy)); holdLock(); }
+    touchY = null;
+  });
+
+  // Frecce della tastiera: progetto precedente/successivo
+  document.addEventListener("keydown", e => {
+    if (e.key === "ArrowDown" || e.key === "PageDown") { e.preventDefault(); goTo(current + 1); }
+    if (e.key === "ArrowUp" || e.key === "PageUp") { e.preventDefault(); goTo(current - 1); }
+  });
+
+  // ---- Header: Home / Projects / Info portano alle sezioni della colonna sinistra ----
+  const sections = { "nav-projects": "projects", "nav-info": "info" };
+
+  function showSection(id) {
+    const el = document.getElementById(id);
+    if (isMobile()) el.scrollIntoView({ behavior: "smooth" });
+    else left.scrollTo({ top: el.offsetTop });
+  }
+  Object.entries(sections).forEach(([btn, id]) => {
+    document.getElementById(btn).addEventListener("click", e => { e.preventDefault(); showSection(id); });
+  });
+  document.getElementById("nav-home").addEventListener("click", e => {
+    e.preventDefault();
+    left.scrollTo({ top: 0 });
+    gallery.scrollTo({ top: 0 });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+
+  // Sottolinea Projects o Info quando la loro sezione è in vista
+  function updateNav() {
+    const mid = left.scrollTop + left.clientHeight / 2;
+    Object.entries(sections).forEach(([btn, id]) => {
+      const el = document.getElementById(id);
+      const on = !isMobile() && el.offsetTop <= mid && el.offsetTop + el.offsetHeight > mid;
+      document.getElementById(btn).classList.toggle("is-active", on);
+    });
+  }
+  left.addEventListener("scroll", updateNav, { passive: true });
+
+  // ---- Colonna sinistra: rotella/swipe = sezione precedente/successiva ----
+  // (presentazione → progetti → contatti), come i progetti nella colonna destra.
+  // Se una sezione è più alta della colonna, prima la si scorre fino in fondo.
+  const leftSections = [...left.children];
+  let leftLocked = false, leftTimer;
+
+  function leftIndex() {
+    let k = 0;
+    leftSections.forEach((s, i) => { if (s.offsetTop <= left.scrollTop + 2) k = i; });
+    return k;
+  }
+  function leftStep(dir) {
+    if (leftLocked) return;
+    leftLocked = true;
+    const k = Math.max(0, Math.min(leftSections.length - 1, leftIndex() + dir));
+    left.scrollTo({ top: leftSections[k].offsetTop });
+  }
+  function holdLeftLock() {
+    clearTimeout(leftTimer);
+    leftTimer = setTimeout(() => { leftLocked = false; }, 450);
+  }
+  // true se la sezione corrente ha ancora contenuto da scorrere in quella direzione
+  function leftHasRoom(dir) {
+    const s = leftSections[leftIndex()];
+    if (dir > 0) return left.scrollTop + left.clientHeight < s.offsetTop + s.offsetHeight - 2;
+    return left.scrollTop > s.offsetTop + 2;
+  }
+
+  left.addEventListener("wheel", e => {
+    if (isMobile() || Math.abs(e.deltaY) < 1) return;
+    const dir = Math.sign(e.deltaY);
+    if (!leftLocked && leftHasRoom(dir)) return;   // scorrimento normale dentro la sezione
+    e.preventDefault();
+    if (Math.abs(e.deltaY) > 4) leftStep(dir);
+    holdLeftLock();
+  }, { passive: false });
+
+  let leftTouchY = null;
+  left.addEventListener("touchstart", e => { leftTouchY = e.touches[0].clientY; }, { passive: true });
+  left.addEventListener("touchend", e => {
+    if (isMobile() || leftTouchY === null) return;
+    const dy = leftTouchY - e.changedTouches[0].clientY;
+    if (Math.abs(dy) > 40) { leftStep(Math.sign(dy)); holdLeftLock(); }
+    leftTouchY = null;
+  });
+
+  // ---- Ingrandimento immagini al clic ----
+  // Una copia dell'immagine si apre sopra la pagina, centrata sull'originale,
+  // larga al massimo ZOOM_MAX_WIDTH della finestra e sempre sotto l'header.
+  // Un altro clic, Esc o lo scorrimento la richiudono.
+  const canZoom = () => ZOOM_MAX_WIDTH > 0 && !isMobile();
+  const header = document.querySelector(".site-head");
+  let zoom = null;
+
+  // Quanto si può ingrandire un'immagine nello spazio disponibile
+  function zoomGeometry(img) {
+    const r = img.getBoundingClientRect();
+    const margin = 16;
+    const top = header.offsetHeight + margin;
+    const maxW = window.innerWidth * ZOOM_MAX_WIDTH;
+    const maxH = window.innerHeight - top - margin;
+    return { r, margin, top, maxH, s: Math.min(maxW / r.width, maxH / r.height) };
+  }
+  // Il "+" compare solo dove l'ingrandimento cambia davvero qualcosa
+  // (le immagini verticali occupano già quasi tutta l'altezza)
+  const zoomable = img => canZoom() && zoomGeometry(img).s >= 1.08;
+
+  function openZoom(img) {
+    closeZoom(true);
+    const { r, margin, top, maxH, s } = zoomGeometry(img);
+    if (s < 1.08) return;
+    const w = r.width * s, h = r.height * s;
+    // Centrata sull'immagine originale, ma sempre dentro la finestra
+    const x = Math.min(Math.max(r.left + r.width / 2 - w / 2, margin), window.innerWidth - margin - w);
+    const y = Math.min(Math.max(r.top + r.height / 2 - h / 2, top), top + maxH - h);
+
+    const el = document.createElement("img");
+    el.className = "zoom";
+    el.src = img.currentSrc || img.src;
+    el.alt = "";
+    Object.assign(el.style, { left: r.left + "px", top: r.top + "px", width: r.width + "px", height: r.height + "px" });
+    document.body.appendChild(el);
+    el.getBoundingClientRect();   // fa partire la transizione dalla posizione originale
+    el.style.transform = `translate(${x - r.left}px, ${y - r.top}px) scale(${s})`;
+    zoom = { el, img };
+  }
+
+  function closeZoom(instant) {
+    if (!zoom) return;
+    const { el } = zoom;
+    zoom = null;
+    if (instant) { el.remove(); return; }
+    el.style.transform = "none";
+    el.addEventListener("transitionend", () => el.remove(), { once: true });
+    setTimeout(() => el.remove(), 700);
+  }
+
+  // Passando sopra un'immagine decidiamo se mostrare il "+"
+  gallery.addEventListener("mouseover", e => {
+    if (e.target.tagName === "IMG") e.target.parentElement.classList.toggle("can-zoom", zoomable(e.target));
+  });
+
+  gallery.addEventListener("click", e => {
+    const img = e.target.tagName === "IMG" ? e.target : null;
+    if (img && img.parentElement.classList.contains("can-zoom")) openZoom(img);
+  });
+  // Clic sull'immagine aperta o altrove: si richiude
+  document.addEventListener("click", e => {
+    if (zoom && !(e.target.tagName === "IMG" && gallery.contains(e.target))) closeZoom();
+  }, true);
+  document.addEventListener("keydown", e => { if (e.key === "Escape") closeZoom(); });
+  // La rotella o lo scorrimento richiudono l'immagine aperta
+  window.addEventListener("wheel", () => closeZoom(), { passive: true });
+  gallery.addEventListener("scroll", () => closeZoom(), { passive: true });
+  window.addEventListener("resize", () => closeZoom(true));
+</script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+# Originali ad alta risoluzione: restano solo sul computer, online vanno le copie in img/
+Progetti/
+CV/
+_backup/
+# Server di anteprima locale, non serve online
+.claude/
